@@ -1,3 +1,6 @@
+import eventlet
+eventlet.monkey_patch()
+
 import json
 import os
 from flask import Flask, render_template
