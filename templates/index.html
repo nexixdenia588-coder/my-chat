@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Chat</title>
+    <script src="https://cloudflare.com"></script>
+    <style>
+        body { font-family: sans-serif; background: #e6ebee; margin: 0; display: flex; flex-direction: column; height: 100vh; }
+        header { background: #517da2; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        #chat-window { flex: 1; overflow-y: auto; padding: 15px; display: flex; flex-direction: column; gap: 10px; }
+        .message { background: white; padding: 10px; border-radius: 10px; max-width: 80%; box-shadow: 0 1px 2px rgba(0,0,0,0.1); }
+        .input-bar { background: white; padding: 10px; display: flex; gap: 10px; border-top: 1px solid #ddd; }
+        input { padding: 10px; border: 1px solid #ddd; border-radius: 20px; outline: none; }
+        #nickname { width: 80px; }
+        #text-input { flex: 1; }
+        button { background: #517da2; color: white; border: none; border-radius: 50%; width: 40px; height: 40px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>Общий Чат</header>
+    <div id="chat-window"></div>
+    <div class="input-bar">
+        <input type="text" id="nickname" placeholder="Ник" maxlength="15">
+        <input type="text" id="text-input" placeholder="Сообщение...">
+        <button onclick="sendMsg()">➤</button>
+    </div>
+
+    <script>
+        var socket = io();
+        var chat = document.getElementById('chat-window');
+        var input = document.getElementById('text-input');
+        var nick = document.getElementById('nickname');
+
+        socket.on('receive_msg', function(data) {
+            var div = document.createElement('div');
+            div.className = 'message';
+            div.innerHTML = `<b>${data.user}:</b> <span>${data.text}</span>`;
+            chat.appendChild(div);
+            chat.scrollTop = chat.scrollHeight;
+        });
+
+        function sendMsg() {
+            var text = input.value.trim();
+            var user = nick.value.trim() || "Аноним";
+            if (text !== "") {
+                socket.emit('send_msg', {user: user, text: text});
+                input.value = "";
+            }
+        }
+
+        input.addEventListener("keypress", function(e) {
+            if (e.key === "Enter") sendMsg();
+        });
+    </script>
+</body>
+</html>
